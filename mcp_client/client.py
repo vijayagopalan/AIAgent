@@ -2,7 +2,7 @@ from mcp import ClientSession
 from mcp.client.sse import sse_client
 from google import genai
 from contextlib import AsyncExitStack
-API_KEY = "AIzaSyAVaDfrutfnarBIv2FEcW6_eTHsJnM_upM"
+API_KEY = "API_KEY_PLACEHOLDER"
 class MCPClient:
     def __init__(self, model: str="gemini-2.5-flash"):
         self.session = None 
