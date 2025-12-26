@@ -8,6 +8,8 @@ async def main():
     response =await  mcp_client.process_query(query)
     print(f"response = {response}")
 
+    await mcp_client.cleanup()
+
 if __name__=="__main__":
     asyncio.run(main())
 

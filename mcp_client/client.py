@@ -33,6 +33,10 @@ class MCPClient:
         except Exception as e:
             print(f"Exception - {e}")
     
+    async def cleanup(self):
+        global exit_stack
+        await self.exit_stack.aclose()
+    
     async def get_mcp_tools(self):
         try:
             tools_result = await self.session.list_tools()
