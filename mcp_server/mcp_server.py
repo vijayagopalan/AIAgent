@@ -20,7 +20,6 @@ def get_knowledge():
         with open(kb_path,'r',encoding='utf-8', errors='ignore') as file:
             kb_data = file.read()
         kb_text = "here is the knowlege base\n\n" + kb_data
-        print(kb_text)
         return kb_text
     
     except FileNotFoundError:

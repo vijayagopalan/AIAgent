@@ -7,7 +7,6 @@ async def main():
     query = "tell me the knowledge you have"
     response =await  mcp_client.process_query(query)
     print(f"response = {response}")
-
     await mcp_client.cleanup()
 
 if __name__=="__main__":
