@@ -1,5 +1,6 @@
 from mcp.server.fastmcp import FastMCP
 from dotenv import load_dotenv
+import pandas as pd
 import os
 from fastapi import FastAPI
 
@@ -7,20 +8,23 @@ app = FastAPI()
 load_dotenv()
 
 mcp = FastMCP(
-    name="information MCP Server",
+    name="Transaction MCP Server",
     host="127.0.0.1",
     port=8080,
 )
 
-@mcp.tool(name = "get_knowledge", description = "Get the knowledge base")
-def get_knowledge():
-    print(os.path.join(os.path.dirname(__file__),"data","content.txt"))
+
+file_path = os.path.join(os.path.dirname(__file__),"data","TNXData.csv")
+
+@mcp.tool(name = "get_transacton_data", description = "Get all the Transaction Data")
+def get_transacton_data():
     try:
-        kb_path = os.path.join(os.path.dirname(__file__),"data","content.txt")
-        with open(kb_path,'r',encoding='utf-8', errors='ignore') as file:
-            kb_data = file.read()
-        kb_text = "here is the knowlege base\n\n" + kb_data
-        return kb_text
+        df = pd.read_csv(
+        file_path, 
+        parse_dates=['Date'], 
+        dayfirst=True  # Set to True if your bank uses DD/MM/YYYY
+        )
+        return df.to_markdown(index=False)
     
     except FileNotFoundError:
         print(f"Exception - File Not Found")
