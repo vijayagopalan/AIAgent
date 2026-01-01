@@ -9,8 +9,8 @@ load_dotenv()
 
 mcp = FastMCP(
     name="overspent MCP Server",
-    host="127.0.0.1",
-    port=8080,
+    host="127.0.0.2",
+    port=8000,
 )
 
 
@@ -24,7 +24,13 @@ def get_over_spent_data():
         parse_dates=['Date'], 
         dayfirst=True 
         )
-        over_spent_df = df[df['Withdrawal'] > 100000]
+        df.columns = df.columns.str.strip()
+        if df['Withdrawls'].dtype == 'object':
+            df['Withdrawls'] = pd.to_numeric(
+                df['Withdrawls'].str.replace(r'[^\d.]', '', regex=True), 
+                errors='coerce'
+            )
+        over_spent_df = df[df['Withdrawls'] > 100000]
         return over_spent_df.to_markdown(index=False)
 
     except FileNotFoundError:

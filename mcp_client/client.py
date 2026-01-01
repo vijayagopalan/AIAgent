@@ -81,5 +81,7 @@ class MCPClient:
                         ]
                     )
                     return final_response.text
+                else:
+                    return part.text
         except Exception as e:
             print(f"Exception in process_query - {str(e)}")
