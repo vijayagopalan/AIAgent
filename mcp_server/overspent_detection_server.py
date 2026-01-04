@@ -13,7 +13,6 @@ mcp = FastMCP(
     port=8000,
 )
 
-
 file_path = os.path.join(os.path.dirname(__file__),"data","TNXData.csv")
 
 @mcp.tool(name = "get_over_spent_data", description = "Get all withdrawal spent over a 100000 limit")

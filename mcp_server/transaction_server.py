@@ -22,7 +22,7 @@ def get_transacton_data():
         df = pd.read_csv(
         file_path, 
         parse_dates=['Date'], 
-        dayfirst=True  # Set to True if your bank uses DD/MM/YYYY
+        dayfirst=True 
         )
         return df.to_markdown(index=False)
     
@@ -41,11 +41,9 @@ def get_monthly_transacton_data(month:int, year: int):
         df = pd.read_csv(
         file_path, 
         parse_dates=['Date'], 
-        dayfirst=True  # Set to True if your bank uses DD/MM/YYYY
+        dayfirst=True 
         )
-        
-        print("Dataframe loaded successfully with records:", len(df))
-        filtered_df = df[(df['Date'].dt.month == month) & (df['date'].dt.year == year)]
+        filtered_df = df[(df['Date'].dt.month == month) & (df['Date'].dt.year == year)]
         return filtered_df.to_markdown(index=False)
     
     except FileNotFoundError:

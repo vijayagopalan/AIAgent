@@ -8,7 +8,8 @@ load_dotenv()
 API_KEY = os.getenv("API_KEY")  
 class MCPClient:
     def __init__(self, model: str="gemini-2.5-flash"):
-        self.session = None 
+        self.session = {} 
+        self.tool_to_session = {}
         self.model_name = model
         self.gemini_client = genai.Client(api_key=API_KEY)
         self.stdio = None
@@ -17,19 +18,21 @@ class MCPClient:
         self.tools_list = None
         self.connection = None
 
-    async def connect_to_server(self, server_url):
+    async def connect_to_server(self, server_url, server_id):
         try:
             self.connection = sse_client(server_url)
             streams = await self.exit_stack.enter_async_context(self.connection)
             read_stream, write_stream = streams
-            self.session = await self.exit_stack.enter_async_context(
+            session = await self.exit_stack.enter_async_context(
                     ClientSession(read_stream, write_stream)
                 )
-            await self.session.initialize()
-            tools_result = await self.session.list_tools()
+            await session.initialize()
+            self.session[server_id] = session
+            tools_result = await session.list_tools()
             self.tools_list = tools_result
             for tool in tools_result.tools:
-                print(f"tool name - {tool.name}")
+                print(f"Server [{server_id}] registered tool: {tool.name}")
+                self.tool_to_session[tool.name] = server_id
         except Exception as e:
             print(f"Exception - {e}")
     
@@ -37,33 +40,32 @@ class MCPClient:
         global exit_stack
         await self.exit_stack.aclose()
     
-    async def get_mcp_tools(self):
+    async def get_mcp_tools(self):        
         try:
-            tools_result = await self.session.list_tools()
             declarations = []
-            for tool in tools_result.tools:
-                declarations.append({
-                    "name": tool.name,
-                    "description": tool.description,
-                    "parameters": tool.inputSchema
-                })
+            for server_id, session in self.session.items():
+                tools_result = await session.list_tools()
+                for tool in tools_result.tools:
+                    declarations.append(tool)
             return declarations
         except Exception as e:
             print(f"Exception in get_mcp_tools - {e}")
 
     async def process_query(self, query):
         try:
-            mcp_tools = await self.session.list_tools()
+            mcp_tools = await self.get_mcp_tools()
             response = await self.gemini_client.aio.models.generate_content(
                 model=self.model_name,
                 contents=query,
-                config={'tools': mcp_tools.tools}
+                config={'tools': mcp_tools}
             )
             for part in response.candidates[0].content.parts:
                 if part.function_call:
                     name = part.function_call.name
                     args = part.function_call.args
-                    result = await self.session.call_tool(name, arguments=args)
+                    server_id = self.tool_to_session.get(name)
+                    session = self.session[server_id]
+                    result = await session.call_tool(name, arguments=args)
                     final_response = await self.gemini_client.aio.models.generate_content(
                         model=self.model_name,
                         contents=[
